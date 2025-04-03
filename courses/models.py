@@ -10,7 +10,13 @@ class Course(models.Model):
 
 
 class LectureMaterials(models.Model):
-    course = models.ForeignKey(Course, related_name='materials', on_delete=models.CASCADE)
+    course = models.ForeignKey(
+        Course,
+        related_name='materials',
+        on_delete=models.CASCADE,
+        null=True,          # null 값을 허용
+        blank=True          # 폼에서 빈 값 허용
+    )
     title = models.CharField(max_length=100)
     files = models.ManyToManyField('File', related_name='lectures')
     

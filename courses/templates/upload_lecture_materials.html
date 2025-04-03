@@ -1,36 +1,34 @@
 <!DOCTYPE html>
 <html lang="kr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>강의자료 업로드</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>강의자료 업로드</title>
 </head>
 <body>
-    <h1>강의자료 업로드</h1>
+  <h1>강의자료 업로드</h1>
 
-    <form method="POST" enctype="multipart/form-data">
-        {% csrf_token %}
-        {{ form.as_p }}
-        
-        <!-- Modify file input to allow multiple files -->
-        <label for="files">Upload Files:</label>
-        <input type="file" name="files" id="files" multiple>
+  <form method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+    <!-- 폼 전체를 출력하는 대신, 파일 필드만 개별적으로 렌더링 -->
+    {{ form.files.errors }}
+    <label for="{{ form.files.id_for_label }}">Upload Files:</label>
+    {{ form.files }}
 
-        <button type="submit">Upload</button>
-    </form>
+    <button type="submit">Upload</button>
+  </form>
 
-    <h2>Uploaded Materials</h2>
-    <ul>
-        {% for material in form.instance.course.materials.all %}
-            <li>
-                {{ material.title }}
-                <ul>
-                    {% for file in material.files.all %}
-                        <li><a href="{{ file.file.url }}" target="_blank">{{ file.file.name }}</a></li>
-                    {% endfor %}
-                </ul>
-            </li>
-        {% endfor %}
-    </ul>
+  <h2>Uploaded Materials</h2>
+  <ul>
+    {% for material in form.instance.course.materials.all %}
+      <li>
+        {{ material.title }}
+        <ul>
+          {% for file in material.files.all %}
+            <li><a href="{{ file.file.url }}" target="_blank">{{ file.file.name }}</a></li>
+          {% endfor %}
+        </ul>
+      </li>
+    {% endfor %}
+  </ul>
 </body>
-</html>
