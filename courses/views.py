@@ -1,7 +1,7 @@
 from django.db import transaction
 from django.shortcuts import render, redirect
 from .models import Course, LectureMaterials, File
-from .forms import LectureMaterialsForm
+from .forms import LectureMaterialsForm, CourseForm
 
 # AI를 통해 파일에서 course와 title을 추출하는 예시 함수
 def process_file_for_course_title(file_obj):
@@ -45,3 +45,13 @@ def list_uploaded_files(request):
     # File 모델의 모든 인스턴스를 조회합니다.
     files = File.objects.all()
     return render(request, 'list_uploaded_files.html', {'files': files})
+
+def create_course(request):
+    if request.method == 'POST':
+        form = CourseForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('/')  # 강좌 목록 페이지 등 원하는 페이지로 리다이렉트
+    else:
+        form = CourseForm()
+    return render(request, 'create_course.html', {'form': form})
