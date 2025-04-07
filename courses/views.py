@@ -1,5 +1,6 @@
 from django.db import transaction
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
+from django.http import JsonResponse
 from .models import Course, LectureMaterials, File
 from .forms import LectureMaterialsForm, CourseForm
 
@@ -55,3 +56,14 @@ def create_course(request):
     else:
         form = CourseForm()
     return render(request, 'create_course.html', {'form': form})
+
+def delete_file(request, file_id):
+    if request.method == 'POST':
+        try:
+            file_instance = get_object_or_404(File, id=file_id)
+            file_instance.delete()  # 모델의 delete 메서드 호출
+            return redirect('list_uploaded_files')  # 파일 목록 페이지로 리다이렉트
+        except Exception as e:
+            return redirect('list_uploaded_files')  # 오류 발생 시에도 목록 페이지로 리다이렉트
+    return redirect('list_uploaded_files')  # 잘못된 요청 시에도 목록 페이지로 리다이렉트
+

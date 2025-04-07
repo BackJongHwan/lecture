@@ -1,5 +1,6 @@
 # main/models.py
 from django.db import models
+import os
 
 class Course(models.Model):
     name = models.CharField(max_length=100)
@@ -49,3 +50,10 @@ class File(models.Model):
     
     def __str__(self):
         return self.file.name
+    def delete(self, *args, **kwargs):
+        # 서버의 파일 시스템에서 파일 삭제
+        if self.file:
+            if os.path.isfile(self.file.path):
+                os.remove(self.file.path)
+        # 데이터베이스에서 객체 삭제
+        super().delete(*args, **kwargs)

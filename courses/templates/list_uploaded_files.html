@@ -1,3 +1,4 @@
+<!-- 나중에 수정 필요함 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -16,5 +17,14 @@
       <li>아직 업로드된 파일이 없습니다.</li>
     {% endfor %}
   </ul>
+  {% for file in files %}
+    <div>
+        <p>{{ file.file.name }}</p>
+        <form method="POST" action="{% url 'delete_file' file.id %}">
+            {% csrf_token %}
+            <button type="submit">삭제</button>
+        </form>
+    </div>
+  {% endfor %}
 </body>
 </html>
