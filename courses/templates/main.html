@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>chatbot 시스템</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'courses/css/main.css' %}">
+</head>
+<body>
+    <div class="container">
+        <!-- 챗봇 섹션 -->
+        <div class="chatbot-section">
+            <div class="chatbot-container">
+                <div class="chat-messages" id="chatMessages">
+                    <!-- 채팅 메시지들이 여기에 표시됩니다 -->
+                </div>
+                <div class="chat-input">
+                    <input type="text" placeholder="메시지를 입력하세요..." id="messageInput">
+                    <button onclick="sendMessage()">전송</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 버튼 섹션 -->
+        <div class="button-section">
+            <a href="{% url 'list_uploaded_files' %}" class="nav-button materials-button">강의자료 보기</a>
+            <a href="{% url 'upload_lecture_materials' %}" class="nav-button upload-button">파일 업로드</a>
+        </div>
+    </div>
+
+    <script src="{% static 'courses/js/main.js' %}"></script>
+</body>
+</html> 

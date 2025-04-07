@@ -5,26 +5,59 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>업로드된 파일 목록</title>
+  <style>
+    .file-list {
+      max-width: 800px;
+      margin: 20px auto;
+      padding: 20px;
+    }
+    .file-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px;
+      border-bottom: 1px solid #eee;
+    }
+    .file-name {
+      flex-grow: 1;
+      margin-right: 20px;
+    }
+    .delete-btn {
+      background-color: #ff4444;
+      color: white;
+      border: none;
+      padding: 5px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .delete-btn:hover {
+      background-color: #cc0000;
+    }
+    .no-files {
+      text-align: center;
+      color: #666;
+      padding: 20px;
+    }
+  </style>
 </head>
 <body>
-  <h1>모든 업로드된 파일</h1>
-  <ul>
-    {% for file in files %}
-      <li>
-        <a href="{{ file.file.url }}" target="_blank">{{ file.file.name }}</a>
-      </li>
-    {% empty %}
-      <li>아직 업로드된 파일이 없습니다.</li>
-    {% endfor %}
-  </ul>
-  {% for file in files %}
-    <div>
-        <p>{{ file.file.name }}</p>
-        <form method="POST" action="{% url 'delete_file' file.id %}">
+  <div class="file-list">
+    <h1>업로드된 파일 목록</h1>
+    {% if files %}
+      {% for file in files %}
+        <div class="file-item">
+          <span class="file-name">{{ file.file.name }}</span>
+          <form method="POST" action="{% url 'delete_file' file.id %}" style="margin: 0;">
             {% csrf_token %}
-            <button type="submit">삭제</button>
-        </form>
-    </div>
-  {% endfor %}
+            <button type="submit" class="delete-btn">삭제</button>
+          </form>
+        </div>
+      {% endfor %}
+    {% else %}
+      <div class="no-files">
+        <p>아직 업로드된 파일이 없습니다.</p>
+      </div>
+    {% endif %}
+  </div>
 </body>
 </html>

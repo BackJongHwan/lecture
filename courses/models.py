@@ -27,7 +27,6 @@ class LectureMaterials(models.Model):
         blank=True          # 폼에서 빈 값 허용
     )
     title = models.CharField(max_length=100)
-    files = models.ManyToManyField('File', related_name='lectures')
     # course와 title은 AI 처리 후 자동으로 채워지므로 사용자에게 입력받지 않습니다.
     class Meta:
         db_table = 'lecture_materials'
@@ -47,6 +46,13 @@ class LectureMaterials(models.Model):
 
 class File(models.Model):
     file = models.FileField(upload_to='materials/')
+    lecture_material = models.ForeignKey(
+        LectureMaterials,
+        related_name='files',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
     
     def __str__(self):
         return self.file.name

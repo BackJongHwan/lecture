@@ -32,10 +32,9 @@ def upload_lecture_materials(request):
                             lecture_material.save()
                             
                             # 파일 객체 생성 및 저장 후 LectureMaterials와 연결
-                            file_instance = File(file=f)
+                            file_instance = File(file=f, lecture_material=lecture_material)
                             file_instance.save()
-                            lecture_material.files.add(file_instance)
-                return redirect('upload_lecture_materials')
+                return redirect('main_page')
             except Exception as e:
                 form.add_error(None, "파일 업로드 중 오류가 발생했습니다. 다시 시도해 주세요.")
     else:
@@ -66,4 +65,8 @@ def delete_file(request, file_id):
         except Exception as e:
             return redirect('list_uploaded_files')  # 오류 발생 시에도 목록 페이지로 리다이렉트
     return redirect('list_uploaded_files')  # 잘못된 요청 시에도 목록 페이지로 리다이렉트
+
+def main_page(request):
+    files = File.objects.all().order_by('-id')  # 최신 파일부터 정렬
+    return render(request, 'main.html', {'files': files})
 
