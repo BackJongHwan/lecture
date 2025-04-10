@@ -1,34 +1,209 @@
 <!DOCTYPE html>
-<html lang="kr">
+<html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>강의자료 업로드</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>강의자료 업로드</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .upload-form {
+            margin-bottom: 30px;
+        }
+        .file-input-container {
+            margin-bottom: 20px;
+        }
+        .file-input-label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #555;
+        }
+        .file-input {
+            display: none;
+        }
+        .custom-file-input {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .custom-file-input:hover {
+            background-color: #45a049;
+        }
+        .selected-files {
+            margin-top: 20px;
+        }
+        .file-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+        .file-name {
+            flex-grow: 1;
+        }
+        .remove-file {
+            background-color: transparent;
+            color: #999;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            margin-left: 10px;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.2s;
+        }
+        .remove-file:hover {
+            background-color: #f0f0f0;
+            color: #ff4444;
+        }
+        .upload-btn {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 20px;
+        }
+        .upload-btn:hover {
+            background-color: #0b7dda;
+        }
+        .nav-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .nav-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            text-align: center;
+            text-decoration: none;
+            color: white;
+            transition: background-color 0.3s;
+        }
+        .view-btn {
+            background-color: #4CAF50;
+        }
+        .view-btn:hover {
+            background-color: #45a049;
+        }
+        .home-btn {
+            background-color: #ff9800;
+        }
+        .home-btn:hover {
+            background-color: #f57c00;
+        }
+    </style>
 </head>
 <body>
-  <h1>강의자료 업로드</h1>
+    <div class="container">
+        <h1>강의자료 업로드</h1>
 
-  <form method="POST" enctype="multipart/form-data">
-    {% csrf_token %}
-    <!-- 폼 전체를 출력하는 대신, 파일 필드만 개별적으로 렌더링 -->
-    {{ form.files.errors }}
-    <label for="{{ form.files.id_for_label }}">Upload Files:</label>
-    {{ form.files }}
+        <form method="POST" enctype="multipart/form-data" class="upload-form" id="uploadForm">
+            {% csrf_token %}
+            {{ form.files.errors }}
+            
+            <div class="file-input-container">
+                <label class="file-input-label">파일 선택:</label>
+                <label for="{{ form.files.id_for_label }}" class="custom-file-input">파일 찾기</label>
+                <input type="file" name="files" id="{{ form.files.id_for_label }}" class="file-input" multiple>
+            </div>
 
-    <button type="submit">Upload</button>
-  </form>
+            <div class="selected-files" id="selectedFiles">
+                <!-- 선택된 파일들이 여기에 표시됩니다 -->
+            </div>
 
-  <h2>Uploaded Materials</h2>
-  <ul>
-    {% for material in form.instance.course.materials.all %}
-      <li>
-        {{ material.title }}
-        <ul>
-          {% for file in material.files.all %}
-            <li><a href="{{ file.file.url }}" target="_blank">{{ file.file.name }}</a></li>
-          {% endfor %}
-        </ul>
-      </li>
-    {% endfor %}
-  </ul>
+            <button type="submit" class="upload-btn">업로드</button>
+        </form>
+
+        <div class="nav-buttons">
+            <a href="{% url 'list_uploaded_files' %}" class="nav-btn view-btn">강의자료 보기</a>
+            <a href="{% url 'main_page' %}" class="nav-btn home-btn">홈으로</a>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const fileInput = document.querySelector('.file-input');
+            const selectedFilesContainer = document.getElementById('selectedFiles');
+            
+            fileInput.addEventListener('change', function() {
+                selectedFilesContainer.innerHTML = '';
+                
+                if (this.files.length > 0) {
+                    for (let i = 0; i < this.files.length; i++) {
+                        const file = this.files[i];
+                        const fileItem = document.createElement('div');
+                        fileItem.className = 'file-item';
+                        
+                        const fileName = document.createElement('span');
+                        fileName.className = 'file-name';
+                        fileName.textContent = file.name;
+                        
+                        const removeButton = document.createElement('button');
+                        removeButton.type = 'button';
+                        removeButton.className = 'remove-file';
+                        removeButton.textContent = '×';
+                        removeButton.addEventListener('click', function() {
+                            fileItem.remove();
+                            // 파일 입력 필드에서 해당 파일 제거
+                            const dt = new DataTransfer();
+                            const input = document.querySelector('.file-input');
+                            const { files } = input;
+                            
+                            for (let j = 0; j < files.length; j++) {
+                                if (j !== i) {
+                                    dt.items.add(files[j]);
+                                }
+                            }
+                            
+                            input.files = dt.files;
+                        });
+                        
+                        fileItem.appendChild(fileName);
+                        fileItem.appendChild(removeButton);
+                        selectedFilesContainer.appendChild(fileItem);
+                    }
+                }
+            });
+        });
+    </script>
 </body>
+</html>
