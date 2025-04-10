@@ -1,22 +1,90 @@
-<!-- 나중에 수정 필요함 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>업로드된 파일 목록</title>
+  <title>강의자료 목록</title>
   <style>
-    .file-list {
-      max-width: 800px;
-      margin: 20px auto;
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      line-height: 1.6;
+      margin: 0;
       padding: 20px;
+      background-color: #f5f5f5;
+    }
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    h1 {
+      color: #333;
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .file-tree {
+      margin-bottom: 20px;
+    }
+    .folder {
+      margin: 5px 0;
+      cursor: pointer;
+    }
+    .folder-content {
+      margin-left: 20px;
+      display: none;
+    }
+    .folder.open > .folder-content {
+      display: block;
+    }
+    .folder-header {
+      display: flex;
+      align-items: center;
+      padding: 8px;
+      background-color: #f8f9fa;
+      border-radius: 4px;
+      margin-bottom: 5px;
+    }
+    .folder-header:hover {
+      background-color: #e9ecef;
+    }
+    .folder-icon {
+      margin-right: 8px;
+      font-size: 14px;
+      width: 20px;
+      text-align: center;
+    }
+    .folder-name {
+      flex-grow: 1;
+    }
+    .course-delete-btn {
+      background-color: #dc3545;
+      color: white;
+      border: none;
+      padding: 4px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+      transition: background-color 0.3s;
+      margin-left: 10px;
+    }
+    .course-delete-btn:hover {
+      background-color: #c82333;
     }
     .file-item {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 10px;
-      border-bottom: 1px solid #eee;
+      padding: 8px;
+      margin: 5px 0;
+      background-color: #fff;
+      border-radius: 4px;
+      border: 1px solid #e9ecef;
+    }
+    .file-item:hover {
+      background-color: #f8f9fa;
     }
     .file-name {
       flex-grow: 1;
@@ -26,38 +94,217 @@
       background-color: #ff4444;
       color: white;
       border: none;
-      padding: 5px 15px;
+      padding: 6px 12px;
       border-radius: 4px;
       cursor: pointer;
+      transition: background-color 0.3s;
     }
     .delete-btn:hover {
       background-color: #cc0000;
     }
-    .no-files {
+    .nav-buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+    .nav-btn {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
       text-align: center;
+      text-decoration: none;
+      color: white;
+      transition: background-color 0.3s;
+    }
+    .upload-btn {
+      background-color: #4CAF50;
+    }
+    .upload-btn:hover {
+      background-color: #45a049;
+    }
+    .home-btn {
+      background-color: #ff9800;
+    }
+    .home-btn:hover {
+      background-color: #f57c00;
+    }
+    .material-type-label {
       color: #666;
-      padding: 20px;
+      font-size: 0.9em;
+      margin-left: 5px;
     }
   </style>
 </head>
 <body>
-  <div class="file-list">
-    <h1>업로드된 파일 목록</h1>
-    {% if files %}
-      {% for file in files %}
-        <div class="file-item">
-          <span class="file-name">{{ file.file.name }}</span>
-          <form method="POST" action="{% url 'delete_file' file.id %}" style="margin: 0;">
-            {% csrf_token %}
-            <button type="submit" class="delete-btn">삭제</button>
-          </form>
+  <div class="container">
+    <h1>강의자료 목록</h1>
+    
+    <div class="file-tree">
+      {% for course_id, course_data in structured_data.courses.items %}
+        <div class="folder" data-course-id="{{ course_id }}">
+          <div class="folder-header">
+            <span class="folder-icon">📁</span>
+            <span class="folder-name">{{ course_data.name }}</span>
+            {% if course_data.name != "미지정 파일" %}
+            <form method="POST" action="{% url 'delete_course' course_id %}" style="margin: 0;" onsubmit="return confirm('정말로 이 강좌를 삭제하시겠습니까?\n(강좌에 속한 파일들은 미지정 파일로 이동됩니다)');">
+              {% csrf_token %}
+              <button type="submit" class="course-delete-btn">삭제</button>
+            </form>
+            {% endif %}
+          </div>
+          <div class="folder-content">
+            <div class="folder" data-material-type="lecture">
+              <div class="folder-header">
+                <span class="folder-icon">📚</span>
+                <span>강의자료</span>
+              </div>
+              <div class="folder-content">
+                {% if course_data.lecture %}
+                  {% for file in course_data.lecture %}
+                    <div class="file-item">
+                      <span class="file-name">{{ file.file.name }}</span>
+                      <form method="POST" action="{% url 'delete_file' file.id %}" style="margin: 0;">
+                        {% csrf_token %}
+                        <button type="submit" class="delete-btn">삭제</button>
+                      </form>
+                    </div>
+                  {% endfor %}
+                {% else %}
+                  <div class="file-item" style="color: #666; font-style: italic;">
+                    <span class="file-name">파일이 없습니다</span>
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="folder" data-material-type="exam">
+              <div class="folder-header">
+                <span class="folder-icon">📝</span>
+                <span>족보</span>
+              </div>
+              <div class="folder-content">
+                {% if course_data.exam %}
+                  {% for file in course_data.exam %}
+                    <div class="file-item">
+                      <span class="file-name">{{ file.file.name }}</span>
+                      <form method="POST" action="{% url 'delete_file' file.id %}" style="margin: 0;">
+                        {% csrf_token %}
+                        <button type="submit" class="delete-btn">삭제</button>
+                      </form>
+                    </div>
+                  {% endfor %}
+                {% else %}
+                  <div class="file-item" style="color: #666; font-style: italic;">
+                    <span class="file-name">파일이 없습니다</span>
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="folder" data-material-type="assignment">
+              <div class="folder-header">
+                <span class="folder-icon">📋</span>
+                <span>과제</span>
+              </div>
+              <div class="folder-content">
+                {% if course_data.assignment %}
+                  {% for file in course_data.assignment %}
+                    <div class="file-item">
+                      <span class="file-name">{{ file.file.name }}</span>
+                      <form method="POST" action="{% url 'delete_file' file.id %}" style="margin: 0;">
+                        {% csrf_token %}
+                        <button type="submit" class="delete-btn">삭제</button>
+                      </form>
+                    </div>
+                  {% endfor %}
+                {% else %}
+                  <div class="file-item" style="color: #666; font-style: italic;">
+                    <span class="file-name">파일이 없습니다</span>
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="folder" data-material-type="other">
+              <div class="folder-header">
+                <span class="folder-icon">📎</span>
+                <span>기타</span>
+              </div>
+              <div class="folder-content">
+                {% if course_data.other %}
+                  {% for file in course_data.other %}
+                    <div class="file-item">
+                      <span class="file-name">{{ file.file.name }}</span>
+                      <form method="POST" action="{% url 'delete_file' file.id %}" style="margin: 0;">
+                        {% csrf_token %}
+                        <button type="submit" class="delete-btn">삭제</button>
+                      </form>
+                    </div>
+                  {% endfor %}
+                {% else %}
+                  <div class="file-item" style="color: #666; font-style: italic;">
+                    <span class="file-name">파일이 없습니다</span>
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
         </div>
       {% endfor %}
-    {% else %}
-      <div class="no-files">
-        <p>아직 업로드된 파일이 없습니다.</p>
-      </div>
-    {% endif %}
+    </div>
+
+    <div class="nav-buttons">
+      <a href="{% url 'upload_lecture_materials' %}" class="nav-btn upload-btn">파일 업로드</a>
+      <a href="{% url 'main_page' %}" class="nav-btn home-btn">홈으로</a>
+    </div>
   </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // 모든 폴더 헤더에 클릭 이벤트 추가
+      document.querySelectorAll('.folder-header').forEach(header => {
+        header.addEventListener('click', function(event) {
+          // 삭제 버튼 클릭 시 폴더 토글 방지
+          if (!event.target.classList.contains('course-delete-btn') && 
+              !event.target.classList.contains('delete-btn')) {
+            const folder = this.parentElement;
+            folder.classList.toggle('open');
+          }
+        });
+      });
+
+      // 페이지 로드 시 미지정 파일 폴더를 자동으로 열기
+      document.querySelectorAll('.folder').forEach(folder => {
+        const folderName = folder.querySelector('.folder-name');
+        if (folderName && folderName.textContent.trim() === '미지정 파일') {
+          folder.classList.add('open');
+        }
+      });
+
+      // 마지막으로 열린 폴더 상태 복원
+      const lastOpenedCourse = "{{ last_opened.course_id|default:'null' }}";
+      const lastOpenedType = "{{ last_opened.material_type|default:'' }}";
+      
+      if (lastOpenedCourse && lastOpenedCourse !== 'null') {
+        // 해당 강좌 폴더 찾기
+        const courseFolder = document.querySelector(`[data-course-id="${lastOpenedCourse}"]`);
+        if (courseFolder) {
+          // 강좌 폴더 열기
+          courseFolder.classList.add('open');
+          
+          // 해당 자료 유형 폴더 찾기
+          if (lastOpenedType) {
+            const materialTypeFolder = courseFolder.querySelector(`[data-material-type="${lastOpenedType}"]`);
+            if (materialTypeFolder) {
+              materialTypeFolder.classList.add('open');
+            }
+          }
+        }
+      }
+    });
+  </script>
 </body>
 </html>
